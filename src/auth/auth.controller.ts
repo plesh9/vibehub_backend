@@ -14,20 +14,21 @@ import {
 import { LoginDto, RegisterDto } from './dto';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
-import { LoginResponse, RegisterResponse } from './interfeces';
-import { Cookie, Public, UserAgent } from '@common/decorators';
+import { JwtPayload, LoginResponse, RegisterResponse } from './interfeces';
+import { Cookie, CurrentUser, Public, UserAgent } from '@common/decorators';
 import { UserResponse } from '@user/responses';
+import { UserService } from '@user/user.service';
 
 const REFRESH_TOKEN = 'refreshToken';
-
-@Public()
 @Controller('auth')
 export class AuthController {
     constructor(
         private readonly authService: AuthService,
         private readonly configService: ConfigService,
+        private readonly userService: UserService,
     ) {}
 
+    @Public()
     @UseInterceptors(ClassSerializerInterceptor)
     @Post('register')
     async register(@Body() dto: RegisterDto, @Res() res: Response, @UserAgent() userAgent: string) {
@@ -40,6 +41,7 @@ export class AuthController {
         this.setRefreshTokenCookies(user, res);
     }
 
+    @Public()
     @UseInterceptors(ClassSerializerInterceptor)
     @Post('login')
     async login(@Body() dto: LoginDto, @Res() res: Response, @UserAgent() userAgent: string) {
@@ -54,6 +56,7 @@ export class AuthController {
         return user;
     }
 
+    @Public()
     @Get('logout')
     async logout(@Cookie(REFRESH_TOKEN) refreshToken: string, @Res() res: Response) {
         if (!refreshToken) {
@@ -72,6 +75,7 @@ export class AuthController {
         res.status(HttpStatus.OK).send();
     }
 
+    @Public()
     @UseInterceptors(ClassSerializerInterceptor)
     @Get('refresh')
     async refresh(@Cookie(REFRESH_TOKEN) refreshToken: string, @Res() res: Response, @UserAgent() userAgent: string) {
@@ -86,6 +90,19 @@ export class AuthController {
         }
 
         this.setRefreshTokenCookies(user, res);
+    }
+
+    @Get('me')
+    async me(@CurrentUser() jwtUser: JwtPayload, @Res() res: Response, @UserAgent() userAgent: string) {
+        const user = await this.userService.findOne(jwtUser.id);
+
+        if (!user) {
+            throw new UnauthorizedException('User not found');
+        }
+
+        const tokens = await this.authService.generateTokens(user, userAgent);
+
+        this.setRefreshTokenCookies({ user, ...tokens }, res);
     }
 
     private setRefreshTokenCookies(user: LoginResponse | RegisterResponse, res: Response) {
