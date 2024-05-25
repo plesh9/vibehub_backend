@@ -2,18 +2,21 @@ import { AuthService } from './auth.service';
 import {
     BadRequestException,
     Body,
+    ClassSerializerInterceptor,
     Controller,
     Get,
     HttpStatus,
     Post,
     Res,
     UnauthorizedException,
+    UseInterceptors,
 } from '@nestjs/common';
 import { LoginDto, RegisterDto } from './dto';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { LoginResponse, RegisterResponse } from './interfeces';
 import { Cookie, Public, UserAgent } from '@common/decorators';
+import { UserResponse } from '@user/responses';
 
 const REFRESH_TOKEN = 'refreshToken';
 
@@ -25,6 +28,7 @@ export class AuthController {
         private readonly configService: ConfigService,
     ) {}
 
+    @UseInterceptors(ClassSerializerInterceptor)
     @Post('register')
     async register(@Body() dto: RegisterDto, @Res() res: Response, @UserAgent() userAgent: string) {
         const user = await this.authService.register(dto, userAgent);
@@ -36,6 +40,7 @@ export class AuthController {
         this.setRefreshTokenCookies(user, res);
     }
 
+    @UseInterceptors(ClassSerializerInterceptor)
     @Post('login')
     async login(@Body() dto: LoginDto, @Res() res: Response, @UserAgent() userAgent: string) {
         const user = await this.authService.login(dto, userAgent);
@@ -49,6 +54,25 @@ export class AuthController {
         return user;
     }
 
+    @Get('logout')
+    async logout(@Cookie(REFRESH_TOKEN) refreshToken: string, @Res() res: Response) {
+        if (!refreshToken) {
+            res.status(HttpStatus.OK).send();
+            return;
+        }
+
+        await this.authService.deleteRefreshToken(refreshToken);
+
+        res.cookie(REFRESH_TOKEN, '', {
+            httpOnly: true,
+            expires: new Date(0),
+            secure: true,
+        });
+
+        res.status(HttpStatus.OK).send();
+    }
+
+    @UseInterceptors(ClassSerializerInterceptor)
     @Get('refresh')
     async refresh(@Cookie(REFRESH_TOKEN) refreshToken: string, @Res() res: Response, @UserAgent() userAgent: string) {
         if (!refreshToken) {
@@ -79,7 +103,7 @@ export class AuthController {
 
         res.status(HttpStatus.CREATED).json({
             accessToken: user.accessToken,
-            user: user.user,
+            user: new UserResponse(user.user),
         });
     }
 }
