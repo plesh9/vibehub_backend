@@ -33,6 +33,7 @@ model Token {
   token     String   @unique
   expiresAt DateTime
   userId    String
+  userAgent String  @map("user_agent")
   user      User     @relation(fields: [userId], references: [id])
 
   @@map("tokens")
