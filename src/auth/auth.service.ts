@@ -101,7 +101,7 @@ export class AuthService {
     }
 
     async generateTokens(user: User, userAgent: string): Promise<Tokens> {
-        const accessToken = 'Bearer ' + this.jwtService.sign({ id: user.id, email: user.email });
+        const accessToken = this.jwtService.sign({ id: user.id, email: user.email });
         const refreshToken = await this.getRefreshToken(user.id, userAgent);
 
         return { accessToken, refreshToken };

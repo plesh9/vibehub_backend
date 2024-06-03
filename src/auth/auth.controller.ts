@@ -18,9 +18,12 @@ import { JwtPayload, LoginResponse, RegisterResponse } from './interfeces';
 import { Cookie, CurrentUser, Public, UserAgent } from '@common/decorators';
 import { UserResponse } from '@user/responses';
 import { UserService } from '@user/user.service';
+import { plainToClass } from 'class-transformer';
 
 const REFRESH_TOKEN = 'refreshToken';
+
 @Controller('auth')
+@UseInterceptors(ClassSerializerInterceptor)
 export class AuthController {
     constructor(
         private readonly authService: AuthService,
@@ -29,7 +32,6 @@ export class AuthController {
     ) {}
 
     @Public()
-    @UseInterceptors(ClassSerializerInterceptor)
     @Post('register')
     async register(@Body() dto: RegisterDto, @Res() res: Response, @UserAgent() userAgent: string) {
         const user = await this.authService.register(dto, userAgent);
@@ -42,7 +44,6 @@ export class AuthController {
     }
 
     @Public()
-    @UseInterceptors(ClassSerializerInterceptor)
     @Post('login')
     async login(@Body() dto: LoginDto, @Res() res: Response, @UserAgent() userAgent: string) {
         const user = await this.authService.login(dto, userAgent);
@@ -76,7 +77,6 @@ export class AuthController {
     }
 
     @Public()
-    @UseInterceptors(ClassSerializerInterceptor)
     @Get('refresh')
     async refresh(@Cookie(REFRESH_TOKEN) refreshToken: string, @Res() res: Response, @UserAgent() userAgent: string) {
         if (!refreshToken) {
@@ -120,7 +120,7 @@ export class AuthController {
 
         res.status(HttpStatus.CREATED).json({
             accessToken: user.accessToken,
-            user: new UserResponse(user.user),
+            user: plainToClass(UserResponse, user.user),
         });
     }
 }
