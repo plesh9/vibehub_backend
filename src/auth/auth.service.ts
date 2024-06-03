@@ -28,7 +28,7 @@ export class AuthService {
             throw new ConflictException('User already exists');
         }
 
-        const newUser = await this.userService.save(dto).catch((err) => {
+        const newUser = await this.userService.save({ ...dto, name: dto.email.replace(/@.*/, '') }).catch((err) => {
             this.logger.error(err);
 
             return null;
