@@ -9,9 +9,10 @@ import { AuthModule } from './auth/auth.module';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
+import { ChatModule } from './chat/chat.module';
 
 @Module({
-    imports: [PrismaModule, UserModule, AuthModule, ConfigModule.forRoot({ isGlobal: true })],
+    imports: [PrismaModule, UserModule, AuthModule, ChatModule, ConfigModule.forRoot({ isGlobal: true })],
     controllers: [AppController, UserController],
     providers: [
         AppService,

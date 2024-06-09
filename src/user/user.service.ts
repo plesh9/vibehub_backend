@@ -27,6 +27,21 @@ export class UserService {
         });
     }
 
+    async findAll(page: number, limit: number) {
+        const skip = (page - 1) * limit;
+        const [users, totalUsers] = await Promise.all([
+            this.prismaService.user.findMany({
+                skip,
+                take: limit,
+            }),
+            this.prismaService.user.count(),
+        ]);
+
+        const hasMore = skip + users.length < totalUsers;
+
+        return { users, hasMore };
+    }
+
     delete(id: string) {
         return this.prismaService.user.delete({
             where: { id },

@@ -8,7 +8,7 @@ export class UserResponse implements User {
     avatarUrl: string;
     createdAt: Date;
     updatedAt: Date;
-    lastOnlineAt: Date;
+    lastOnlineAt: string;
 
     @Exclude()
     password: string;

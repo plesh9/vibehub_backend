@@ -21,7 +21,7 @@ model User {
   password     String
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
-  lastOnlineAt DateTime? @map("last_online_at")
+  lastOnlineAt String? @map("last_online_at")
   chats        Chat[]
   messages     Message[]
   tokens       Token[]
@@ -40,25 +40,28 @@ model Token {
 }
 
 model Chat {
-  id        String    @id @default(uuid())
-  name      String
-  createdAt DateTime  @default(now()) @map("created_at")
-  updatedAt DateTime  @updatedAt @map("updated_at")
-  messages  Message[]
-  users     User[]
+  id          String    @id @default(uuid())
+  name        String
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  users       User[]
+  lastMessage Message?  @relation("LastMessage", fields: [messageId], references: [id])
+  messageId   String?   @unique
+  Message     Message[]
 
   @@map("chats")
 }
 
 model Message {
-  id        String   @id @default(uuid())
-  text      String
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-  user      User     @relation(fields: [userId], references: [id])
-  chat      Chat     @relation(fields: [chatId], references: [id])
-  userId    String
-  chatId    String
+  id              String   @id @default(uuid())
+  text            String
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  user            User     @relation(fields: [userId], references: [id])
+  chat            Chat     @relation(fields: [chatId], references: [id])
+  userId          String
+  chatId          String
+  chatLastMessage Chat?    @relation("LastMessage")
 
   @@map("messages")
 }
