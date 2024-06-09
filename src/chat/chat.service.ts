@@ -193,7 +193,6 @@ export class ChatService {
         }
 
         if (!chat) {
-            // Search for chat with the specified users if chatId is not provided or no chat found by chatId
             chat = await this.prismaService.chat
                 .findFirst({
                     where: {
@@ -213,7 +212,7 @@ export class ChatService {
                     users: {
                         connect: [{ id: fromUserId }, { id: toUserId }],
                     },
-                    name: 'New Chat', // Assign a default name or based on some logic
+                    name: 'New Chat',
                 },
                 include: {
                     users: true,
