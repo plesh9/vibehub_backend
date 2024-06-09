@@ -21,10 +21,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         if (userId) {
             this.onlineUsers.add(userId);
             this.userSocketMap.set(userId, client.id);
-            await this.prismaService.user.update({
-                where: { id: userId },
-                data: { lastOnlineAt: 'ONLINE' },
-            });
+            await this.prismaService.user
+                .update({
+                    where: { id: userId },
+                    data: { lastOnlineAt: 'ONLINE' },
+                })
+                .catch(() => null);
             client.join(userId);
             console.log(`User ${userId} connected`);
             await this.addUserToChats(userId, client);
