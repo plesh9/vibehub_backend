@@ -38,7 +38,7 @@ services:
       DB_USER: ${POSTGRES_USER:-postgres}
       DB_PASS: ${POSTGRES_PASSWORD:-123456}
       DB_NAME: ${POSTGRES_DB:-postgres_db}
-      DATABASE_URL: "postgresql://postgres:123456@vibehub-backend-xknx.onrender.com:5432/postgres_db"
+      DATABASE_URL: "postgresql://postgres:123456@postgres:5432/postgres_db"
     ports:
         - '4000:4000'
     networks:
