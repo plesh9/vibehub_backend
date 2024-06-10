@@ -1,0 +1,22 @@
+// src/schemas/message.schema.ts
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { User } from './user.schema';
+import { Chat } from './chat.schema';
+import * as mongoose from 'mongoose';
+
+export type MessageDocument = Message & Document;
+
+@Schema({ collection: 'messages', timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } })
+export class Message {
+    @Prop({ type: String, required: true })
+    text: string;
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })
+    user: User;
+
+    @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'Chat', required: true })
+    chat: Chat;
+}
+
+export const MessageSchema = SchemaFactory.createForClass(Message);
