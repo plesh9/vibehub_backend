@@ -32,6 +32,19 @@ services:
             - postgres
         restart: unless-stopped
 
+    app:
+        build:
+            context: ../.. # Шлях до кореневої директорії вашого проекту
+        environment:
+            DATABASE_URL: postgres://postgres:123456@postgres:5432/postgres_db
+        ports:
+            - '4000:4000'
+        depends_on:
+            - postgres
+        networks:
+            - postgres
+        restart: unless-stopped
+
 networks:
     postgres:
         driver: bridge
