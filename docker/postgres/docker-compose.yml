@@ -36,7 +36,7 @@ services:
         build:
             context: ../.. # Шлях до кореневої директорії вашого проекту
         environment:
-            DATABASE_URL: postgres://postgres:123456@postgres:5432/postgres_db
+            DATABASE_URL: postgresql://postgres:123456@localhost:5432/db_test
         ports:
             - '4000:4000'
         depends_on:
