@@ -4,10 +4,16 @@ FROM node:14
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy package.json and package-lock.json
-COPY package*.json ./
+# Install pnpm globally
+RUN npm install -g pnpm
 
-# Install dependencies
+# Set environment variable to ignore preinstall scripts
+ENV npm_config_ignore_scripts=true
+
+# Copy package.json and pnpm-lock.yaml (if you use it)
+COPY package.json pnpm-lock.yaml* ./
+
+# Install dependencies using pnpm
 RUN pnpm install
 
 # Copy the rest of the application code
@@ -17,7 +23,7 @@ COPY . .
 RUN pnpm run build
 
 # Expose the application port
-EXPOSE 3000
+EXPOSE 4000
 
 # Start the NestJS application
 CMD ["pnpm", "run", "start:prod"]
