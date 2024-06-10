@@ -40,7 +40,7 @@ services:
       DB_NAME: ${POSTGRES_DB:-postgres_db}
       DATABASE_URL: "postgresql://postgres:123456@postgres:5432/postgres_db"
     ports:
-      - '3000:3000'
+        - '4000:4000'
     networks:
       - app_network
     depends_on:
