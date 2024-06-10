@@ -8,16 +8,16 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm install
+RUN pnpm install
 
 # Copy the rest of the application code
 COPY . .
 
 # Build the NestJS application
-RUN npm run build
+RUN pnpm run build
 
 # Expose the application port
 EXPOSE 3000
 
 # Start the NestJS application
-CMD ["npm", "run", "start:prod"]
+CMD ["pnpm", "run", "start:prod"]
