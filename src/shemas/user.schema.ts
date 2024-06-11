@@ -33,6 +33,7 @@ export class User {
 
     @Prop({ type: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Token' }] })
     tokens: Token[];
+    _id: Record<string, any>;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

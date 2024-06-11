@@ -8,6 +8,7 @@ export type TokenDocument = Token & Document;
 
 @Schema({ collection: 'tokens' })
 export class Token {
+    _id: string;
     @Prop({ type: String, required: true, unique: true })
     token: string;
 

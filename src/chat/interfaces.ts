@@ -1,8 +1,8 @@
 export interface ChatType {
     id: string;
     name: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
     lastMessage: MessageType | null;
     users: ChatUserType[];
 }
@@ -10,8 +10,8 @@ export interface ChatType {
 export interface MessageType {
     id: string;
     text: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt: string;
+    updatedAt: string;
     user: ChatUserType;
     chat: {
         id: string;

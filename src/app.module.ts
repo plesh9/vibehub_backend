@@ -16,6 +16,7 @@ import { Message, MessageSchema } from './shemas/message.schema';
 
 @Module({
     imports: [
+        ConfigModule.forRoot({ isGlobal: true }),
         MongooseModule.forRoot(process.env.DATABASE_URL),
         MongooseModule.forFeature([
             { name: User.name, schema: UserSchema },
