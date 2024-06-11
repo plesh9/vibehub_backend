@@ -1,3 +1,4 @@
+import { PaginationDto } from 'libs/types';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -25,7 +26,8 @@ export class UserService {
         return this.userModel.findById(id).exec();
     }
 
-    async findAll(page: number, limit: number) {
+    async findAll(paginationDto: PaginationDto) {
+        const { page, limit } = new PaginationDto(paginationDto);
         const skip = (page - 1) * limit;
         const users = await this.userModel.find().skip(skip).limit(limit).exec();
         const totalUsers = await this.userModel.countDocuments().exec();

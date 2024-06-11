@@ -20,7 +20,7 @@ export class ChatService {
     ) {}
 
     async getChats(paginationDto: PaginationDto, userId: string): Promise<{ chats: ChatType[]; hasMore: boolean }> {
-        const { page, limit } = paginationDto;
+        const { page, limit } = new PaginationDto(paginationDto);
         const offset = (page - 1) * limit;
 
         const chats = await this.chatModel
@@ -81,7 +81,7 @@ export class ChatService {
         chatId: string,
         paginationDto: PaginationDto,
     ): Promise<{ messages: MessageType[]; hasMore: boolean }> {
-        const { page, limit } = paginationDto;
+        const { page, limit } = new PaginationDto(paginationDto);
         const offset = (page - 1) * limit;
 
         try {

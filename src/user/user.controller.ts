@@ -31,10 +31,7 @@ export class UserController {
             throw new UnauthorizedException('User not found');
         }
 
-        const pageNumber = Number(paginationDto.page) || 1;
-        const limitNumber = Number(paginationDto.limit) || 52;
-
-        const usersData = await this.userService.findAll(pageNumber, limitNumber);
+        const usersData = await this.userService.findAll(paginationDto);
 
         return {
             users: usersData.users
