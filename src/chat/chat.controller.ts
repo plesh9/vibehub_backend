@@ -22,7 +22,7 @@ export class ChatController {
         chats: ChatType[];
         hasMore: boolean;
     }> {
-        const user = await this.userService.findOne(jwtUser.id);
+        const user = await this.userService.findById(jwtUser.id);
 
         if (!user) {
             throw new UnauthorizedException('User not found');
@@ -49,7 +49,7 @@ export class ChatController {
 
     @Post('/messages')
     async sendMessage(@CurrentUser() jwtUser: JwtPayload, @Body() createMessageDto: CreateMessageDto) {
-        const user = await this.userService.findOne(jwtUser.id);
+        const user = await this.userService.findById(jwtUser.id);
 
         if (!user) {
             throw new UnauthorizedException('User not found');

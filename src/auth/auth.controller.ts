@@ -18,7 +18,6 @@ import { JwtPayload, LoginResponse, RegisterResponse } from './interfeces';
 import { Cookie, CurrentUser, Public, UserAgent } from '@common/decorators';
 import { UserResponse } from '@user/responses';
 import { UserService } from '@user/user.service';
-import { plainToClass } from 'class-transformer';
 
 const REFRESH_TOKEN = 'refreshToken';
 
@@ -94,7 +93,7 @@ export class AuthController {
 
     @Get('me')
     async me(@CurrentUser() jwtUser: JwtPayload, @Res() res: Response, @UserAgent() userAgent: string) {
-        const user = await this.userService.findOne(jwtUser.id);
+        const user = await this.userService.findById(jwtUser.id);
 
         if (!user) {
             throw new UnauthorizedException('User not found');
@@ -110,6 +109,8 @@ export class AuthController {
             throw new UnauthorizedException('Refresh token is not provided');
         }
 
+        console.log(user);
+
         res.cookie(REFRESH_TOKEN, user.refreshToken.token, {
             httpOnly: true,
             sameSite: 'lax',
@@ -120,7 +121,7 @@ export class AuthController {
 
         res.status(HttpStatus.CREATED).json({
             accessToken: user.accessToken,
-            user: plainToClass(UserResponse, user.user),
+            user: new UserResponse(user.user),
         });
     }
 }
