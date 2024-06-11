@@ -1,19 +1,20 @@
-import { User } from '@prisma/client';
-import { Exclude } from 'class-transformer';
+import { User } from 'src/shemas/user.schema';
 
-export class UserResponse implements User {
-    id: string;
+export class UserResponse extends User {
     email: string;
-    name: string;
-    avatarUrl: string;
-    createdAt: Date;
-    updatedAt: Date;
-    lastOnlineAt: string;
-
-    @Exclude()
+    name?: string;
+    avatarUrl?: string;
     password: string;
+    lastOnlineAt?: string;
+    id: string;
 
-    constructor(user: User) {
-        Object.assign(this, user);
+    constructor(partial: Partial<UserResponse>) {
+        super();
+        this.email = partial.email;
+        this.name = partial.name;
+        this.avatarUrl = partial.avatarUrl;
+        this.password = partial.password;
+        this.lastOnlineAt = partial.lastOnlineAt;
+        this.id = partial._id.toString();
     }
 }

@@ -1,52 +1,41 @@
-import { User } from '@prisma/client';
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from '@prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
 import { genSaltSync, hashSync } from 'bcrypt';
+import { User, UserDocument } from 'src/shemas/user.schema';
 
 @Injectable()
 export class UserService {
-    constructor(private readonly prismaService: PrismaService) {}
+    constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
 
-    save(user: Partial<User>) {
+    async save(user: Partial<User>) {
         const hashedPassword = this.hashPassword(user.password);
-
-        return this.prismaService.user.create({
-            data: {
-                ...user,
-                email: user.email,
-                password: hashedPassword,
-            },
+        const newUser = new this.userModel({
+            ...user,
+            password: hashedPassword,
         });
+        return newUser.save();
     }
 
-    findOne(idOrEmail: string) {
-        return this.prismaService.user.findFirst({
-            where: {
-                OR: [{ id: idOrEmail }, { email: idOrEmail }],
-            },
-        });
+    async findByEmail(email: string): Promise<UserDocument | null> {
+        return this.userModel.findOne({ email }).exec();
+    }
+
+    async findById(id: string): Promise<UserDocument | null> {
+        return this.userModel.findById(id).exec();
     }
 
     async findAll(page: number, limit: number) {
         const skip = (page - 1) * limit;
-        const [users, totalUsers] = await Promise.all([
-            this.prismaService.user.findMany({
-                skip,
-                take: limit,
-            }),
-            this.prismaService.user.count(),
-        ]);
-
+        const users = await this.userModel.find().skip(skip).limit(limit).exec();
+        const totalUsers = await this.userModel.countDocuments().exec();
         const hasMore = skip + users.length < totalUsers;
 
         return { users, hasMore };
     }
 
-    delete(id: string) {
-        return this.prismaService.user.delete({
-            where: { id },
-            select: { id: true },
-        });
+    async delete(id: string) {
+        return this.userModel.findByIdAndDelete(id).exec();
     }
 
     private hashPassword(password: string) {

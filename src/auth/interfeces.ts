@@ -1,8 +1,9 @@
-import { Token, User } from '@prisma/client';
+import { TokenDocument } from 'src/shemas/token.schema';
+import { User } from 'src/shemas/user.schema';
 
 export interface Tokens {
     accessToken: string;
-    refreshToken: Token;
+    refreshToken: TokenDocument;
 }
 
 export interface LoginResponse extends Tokens {

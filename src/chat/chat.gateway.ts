@@ -1,6 +1,10 @@
 import { WebSocketGateway, WebSocketServer, OnGatewayConnection, OnGatewayDisconnect } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { PrismaService } from '@prisma/prisma.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from 'src/shemas/user.schema';
+import { Chat, ChatDocument } from 'src/shemas/chat.schema';
+import { MessageType } from './interfaces';
 
 @WebSocketGateway({
     cors: {
@@ -14,19 +18,20 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     private onlineUsers: Set<string> = new Set();
     private userSocketMap: Map<string, string> = new Map();
 
-    constructor(private readonly prismaService: PrismaService) {}
+    constructor(
+        @InjectModel(User.name) private userModel: Model<UserDocument>,
+        @InjectModel(Chat.name) private chatModel: Model<ChatDocument>,
+    ) {}
 
     async handleConnection(client: Socket) {
-        const userId = client.handshake.query.userId as string;
+        const userId = client.handshake.query.userId.toString();
+
+        console.log(`User ${userId} connected`);
+
         if (userId) {
             this.onlineUsers.add(userId);
             this.userSocketMap.set(userId, client.id);
-            await this.prismaService.user
-                .update({
-                    where: { id: userId },
-                    data: { lastOnlineAt: 'ONLINE' },
-                })
-                .catch(() => null);
+            await this.userModel.findByIdAndUpdate(userId, { lastOnlineAt: 'ONLINE' }).catch(() => null);
             client.join(userId);
             console.log(`User ${userId} connected`);
             await this.addUserToChats(userId, client);
@@ -35,14 +40,11 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     async handleDisconnect(client: Socket) {
-        const userId = client.handshake.query.userId as string;
+        const userId = client.handshake.query.userId.toString();
         if (userId) {
             this.onlineUsers.delete(userId);
             this.userSocketMap.delete(userId);
-            await this.prismaService.user.update({
-                where: { id: userId },
-                data: { lastOnlineAt: new Date().toISOString() },
-            });
+            await this.userModel.findByIdAndUpdate(userId, { lastOnlineAt: new Date().toISOString() });
             client.leave(userId);
             console.log(`User ${userId} disconnected`);
             this.server.emit('userDisconnected', userId);
@@ -51,18 +53,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     }
 
     async addUserToChats(userId: string, client: Socket) {
-        const userChats = await this.prismaService.chat.findMany({
-            where: {
-                users: {
-                    some: {
-                        id: userId,
-                    },
-                },
-            },
-        });
+        const userChats = await this.chatModel.find({ users: userId }).exec();
+
+        console.log(`chats`, userChats, userId);
 
         userChats.forEach((chat) => {
-            client.join(chat.id);
+            client.join(chat._id.toString());
         });
         console.log(`User ${userId} joined ${userChats.length} chats`);
     }
@@ -80,13 +76,12 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
         });
     }
 
-    sendMessageToChat(chatId: string, message: any, senderId: string) {
+    sendMessageToChat(chatId: string, message: MessageType, senderId: string) {
         this.server.to(chatId).except(senderId).emit('receiveMessage', message);
     }
 
     private async updateOnlineUsers() {
         const onlineUsersArray = Array.from(this.onlineUsers);
-
         this.server.emit('onlineUsers', onlineUsersArray);
     }
 }
